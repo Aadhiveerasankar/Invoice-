@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Granite GST Invoice Prototype</title>
+<style>
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:#f2f4f7}
+.container{max-width:900px;margin:auto;padding:15px}
+.card{background:white;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+.title{text-align:center;font-size:22px;font-weight:bold;margin-bottom:10px}
+.subtitle{font-size:16px;font-weight:bold;margin:10px 0}
+label{font-size:13px;font-weight:bold}
+input,select{width:100%;padding:8px;margin-top:4px;margin-bottom:10px;border:1px solid #ccc;border-radius:6px;font-size:14px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ddd;padding:8px;font-size:13px;text-align:center}
+th{background:#f5f5f5}
+button{width:100%;padding:12px;border:none;border-radius:8px;background:#2563eb;color:white;font-size:16px;font-weight:bold}
+.totalBox{display:flex;justify-content:space-between;margin-top:6px;font-size:14px}
+.result{font-weight:bold;font-size:16px}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="card">
+<div class="title">LAKSHMI GANESH GRANITES</div>
+<div style="text-align:center;font-size:13px">GST TAX INVOICE PROTOTYPE</div>
+</div>
+
+<div class="card">
+<div class="subtitle">Invoice Details</div>
+<label>Invoice Number</label>
+<input id="invoiceNo" placeholder="Auto or manual">
+
+<label>Invoice Date</label>
+<input type="date" id="invoiceDate">
+
+<label>Way Bill Number</label>
+<input id="waybill" placeholder="Enter Way Bill">
+</div>
+
+<div class="card">
+<div class="subtitle">Customer Details</div>
+<label>Customer Name</label>
+<input id="customerName" placeholder="Enter Name">
+
+<label>Address</label>
+<input id="address" placeholder="Enter Address">
+
+<label>GST Number</label>
+<input id="gst">
+
+<label>Customer State</label>
+<select id="state" onchange="calculate()">
+<option>Andhra Pradesh</option>
+<option>Telangana</option>
+<option>Tamil Nadu</option>
+<option>Karnataka</option>
+<option>Kerala</option>
+</select>
+</div>
+
+<div class="card">
+<div class="subtitle">Transport</div>
+<label>Vehicle Number</label>
+<input id="vehicle" placeholder="AP00AB1234">
+</div>
+
+<div class="card">
+<div class="subtitle">Item Details</div>
+<table>
+<tr>
+<th>Description</th>
+<th>HSN</th>
+<th>Qty</th>
+<th>Rate</th>
+<th>Amount</th>
+</tr>
+<tr>
+<td><input id="desc"></td>
+<td><input id="hsn"></td>
+<td><input type="number" id="qty" oninput="calculate()"></td>
+<td><input type="number" id="rate" oninput="calculate()"></td>
+<td id="amount">0</td>
+</tr>
+</table>
+</div>
+
+<div class="card">
+<div class="subtitle">GST Calculation</div>
+<div class="totalBox"><span>Taxable Amount</span><span id="taxable">0</span></div>
+<div class="totalBox"><span>CGST</span><span id="cgst">0</span></div>
+<div class="totalBox"><span>SGST</span><span id="sgst">0</span></div>
+<div class="totalBox"><span>IGST</span><span id="igst">0</span></div>
+<hr>
+<div class="totalBox result"><span>Total</span><span id="grand">0</span></div>
+</div>
+
+<div class="card">
+<button onclick="saveInvoice()">Save Invoice (Prototype)</button>
+</div>
+
+</div>
+
+<script>
+function calculate(){
+let qty=parseFloat(document.getElementById('qty').value)||0
+let rate=parseFloat(document.getElementById('rate').value)||0
+let amount=qty*rate
+
+document.getElementById('amount').innerText=amount.toFixed(2)
+document.getElementById('taxable').innerText=amount.toFixed(2)
+
+let state=document.getElementById('state').value
+
+let cgst=0
+let sgst=0
+let igst=0
+
+if(state==='Andhra Pradesh'){
+cgst=amount*0.09
+sgst=amount*0.09
+}else{
+igst=amount*0.18
+}
+
+document.getElementById('cgst').innerText=cgst.toFixed(2)
+document.getElementById('sgst').innerText=sgst.toFixed(2)
+document.getElementById('igst').innerText=igst.toFixed(2)
+
+let total=amount+cgst+sgst+igst
+
+document.getElementById('grand').innerText=total.toFixed(2)
+}
+
+function saveInvoice(){
+let data={
+invoice:document.getElementById('invoiceNo').value,
+name:document.getElementById('customerName').value,
+vehicle:document.getElementById('vehicle').value,
+total:document.getElementById('grand').innerText
+}
+
+let invoices=JSON.parse(localStorage.getItem('invoices')||'[]')
+
+invoices.push(data)
+
+localStorage.setItem('invoices',JSON.stringify(invoices))
+
+alert('Invoice Saved (Prototype Database)')
+}
+</script>
+
+</body>
+  </html>
+  
