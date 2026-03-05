@@ -3,64 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Granite GST Invoice Prototype</title>
+<title>Granite GST Invoice</title>
 <style>
 *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 body{margin:0;background:#f2f4f7}
 .container{max-width:900px;margin:auto;padding:15px}
 .card{background:white;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
-.title{text-align:center;font-size:22px;font-weight:bold;margin-bottom:10px}
+.title{text-align:center;font-size:22px;font-weight:bold;margin-bottom:5px}
 .subtitle{font-size:16px;font-weight:bold;margin:10px 0}
 label{font-size:13px;font-weight:bold}
-input,select{width:100%;padding:8px;margin-top:4px;margin-bottom:10px;border:1px solid #ccc;border-radius:6px;font-size:14px}
+input,select,textarea{width:100%;padding:8px;margin-top:4px;margin-bottom:10px;border:1px solid #ccc;border-radius:6px;font-size:14px}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #ddd;padding:8px;font-size:13px;text-align:center}
 th{background:#f5f5f5}
-button{width:100%;padding:12px;border:none;border-radius:8px;background:#2563eb;color:white;font-size:16px;font-weight:bold}
+button{width:100%;padding:12px;border:none;border-radius:8px;background:#2563eb;color:white;font-size:16px;font-weight:bold;margin-top:8px}
+.downloadBtn{background:#16a34a}
 .totalBox{display:flex;justify-content:space-between;margin-top:6px;font-size:14px}
 .result{font-weight:bold;font-size:16px}
+.stamp{color:red;font-weight:bold;font-size:20px;border:2px solid red;display:inline-block;padding:6px 12px;border-radius:6px;letter-spacing:2px}
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="invoiceArea">
 
 <div class="card">
 <div class="title">LAKSHMI GANESH GRANITES</div>
-<div style="text-align:center;font-size:13px">GST TAX INVOICE PROTOTYPE</div>
+<div style="text-align:center;font-size:13px">GST TAX INVOICE</div>
+<br>
+<div>Invoice Number</div>
+<div class="stamp" id="invoiceStamp">INV-001</div>
 </div>
 
 <div class="card">
 <div class="subtitle">Invoice Details</div>
 <label>Invoice Number</label>
-<input id="invoiceNo" placeholder="Auto or manual">
+<input id="invoiceNo" placeholder="INV-001" oninput="updateStamp()">
 
 <label>Invoice Date</label>
 <input type="date" id="invoiceDate">
 
 <label>Way Bill Number</label>
-<input id="waybill" placeholder="Enter Way Bill">
+<input id="waybill">
 </div>
 
 <div class="card">
-<div class="subtitle">Customer Details</div>
-<label>Customer Name</label>
-<input id="customerName" placeholder="Enter Name">
-
-<label>Address</label>
-<input id="address" placeholder="Enter Address">
+<div class="subtitle">Delivery / Showroom Address</div>
+<label>Delivery Address</label>
+<textarea id="address" rows="3"></textarea>
 
 <label>GST Number</label>
-<input id="gst">
+<input id="gst" oninput="detectStateAndTax()" placeholder="Enter GST Number">
 
-<label>Customer State</label>
-<select id="state" onchange="calculate()">
-<option>Andhra Pradesh</option>
-<option>Telangana</option>
-<option>Tamil Nadu</option>
-<option>Karnataka</option>
-<option>Kerala</option>
-</select>
+<label>State Code</label>
+<input id="stateCode" readonly>
 </div>
 
 <div class="card">
@@ -100,32 +96,59 @@ button{width:100%;padding:12px;border:none;border-radius:8px;background:#2563eb;
 </div>
 
 <div class="card">
-<button onclick="saveInvoice()">Save Invoice (Prototype)</button>
+<button onclick="saveInvoice()">Save Invoice</button>
+<button class="downloadBtn" onclick="downloadInvoice()">Download / Print Invoice</button>
 </div>
 
 </div>
 
 <script>
+
+// Company state GST code (Andhra Pradesh)
+const COMPANY_STATE_CODE = "37";
+
+function updateStamp(){
+let val=document.getElementById('invoiceNo').value
+if(val.length>0){
+document.getElementById('invoiceStamp').innerText=val
+}
+}
+
+function detectStateAndTax(){
+let gst=document.getElementById('gst').value
+if(gst.length>=2){
+let code=gst.substring(0,2)
+document.getElementById('stateCode').value=code
+}
+calculate()
+}
+
 function calculate(){
+
 let qty=parseFloat(document.getElementById('qty').value)||0
 let rate=parseFloat(document.getElementById('rate').value)||0
 let amount=qty*rate
 
-document.getElementById('amount').innerText=amount.toFixed(2)
-document.getElementById('taxable').innerText=amount.toFixed(2)
-
-let state=document.getElementById('state').value
+let gst=document.getElementById('gst').value
+let stateCode=gst.substring(0,2)
 
 let cgst=0
 let sgst=0
 let igst=0
 
-if(state==='Andhra Pradesh'){
+if(stateCode===COMPANY_STATE_CODE){
+
 cgst=amount*0.09
 sgst=amount*0.09
+
 }else{
+
 igst=amount*0.18
+
 }
+
+document.getElementById('amount').innerText=amount.toFixed(2)
+document.getElementById('taxable').innerText=amount.toFixed(2)
 
 document.getElementById('cgst').innerText=cgst.toFixed(2)
 document.getElementById('sgst').innerText=sgst.toFixed(2)
@@ -134,12 +157,14 @@ document.getElementById('igst').innerText=igst.toFixed(2)
 let total=amount+cgst+sgst+igst
 
 document.getElementById('grand').innerText=total.toFixed(2)
+
 }
 
 function saveInvoice(){
+
 let data={
 invoice:document.getElementById('invoiceNo').value,
-name:document.getElementById('customerName').value,
+date:document.getElementById('invoiceDate').value,
 vehicle:document.getElementById('vehicle').value,
 total:document.getElementById('grand').innerText
 }
@@ -150,10 +175,15 @@ invoices.push(data)
 
 localStorage.setItem('invoices',JSON.stringify(invoices))
 
-alert('Invoice Saved (Prototype Database)')
+alert('Invoice Saved')
+
 }
+
+function downloadInvoice(){
+window.print()
+}
+
 </script>
 
 </body>
-  </html>
-  
+</html>
